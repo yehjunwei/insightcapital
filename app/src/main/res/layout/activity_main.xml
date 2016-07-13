@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+    <Button
+        android:id="@+id/btn_get_data"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Get MMFund Result"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"/>
+
+    <TextView
+        android:id="@+id/tv_output_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:textSize="18sp"
+        android:layout_marginBottom="20dp"
+        android:gravity="center_horizontal"
+        />
+
+    <TableLayout
+        android:id="@+id/table_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btn_get_data"
+        android:stretchColumns="0,1">
+
+        <TableRow
+            android:layout_marginTop="20dp">
+            <ImageView
+                android:id="@+id/iv_today_face"
+                android:layout_width="wrap_content"
+                android:layout_height="100dp"/>
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="100dp">
+
+                <TextView
+                    android:id="@+id/tv_today_balance_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="今日損益"
+                    android:textSize="20sp"
+                    android:layout_centerHorizontal="true"/>
+
+                <TextView
+                    android:id="@+id/tv_today_balance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/tv_today_balance_title"
+                    android:gravity="center_vertical"
+                    android:layout_centerHorizontal="true"
+                    android:layout_alignParentBottom="true"
+                    android:textSize="40sp"/>
+            </RelativeLayout>
+        </TableRow>
+
+        <TableRow
+            android:layout_marginTop="20dp">
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="100dp">
+
+                <TextView
+                    android:id="@+id/tv_month_balance_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="當月累積損益"
+                    android:textSize="20sp"
+                    android:layout_centerHorizontal="true"/>
+
+                <TextView
+                    android:id="@+id/tv_month_balance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/tv_month_balance_title"
+                    android:gravity="center_vertical"
+                    android:layout_centerHorizontal="true"
+                    android:layout_alignParentBottom="true"
+                    android:textSize="40sp"/>
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/tv_month_balance_rate_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="當月累積報酬率"
+                    android:textSize="20sp"
+                    android:layout_centerHorizontal="true"/>
+
+                <TextView
+                    android:id="@+id/tv_month_balance_rate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/tv_month_balance_rate_title"
+                    android:gravity="center_vertical"
+                    android:layout_centerHorizontal="true"
+                    android:layout_alignParentBottom="true"
+                    android:textSize="40sp"/>
+            </RelativeLayout>
+        </TableRow>
+
+        <TableRow
+            android:layout_marginTop="20dp">
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="100dp">
+
+            <TextView
+                android:id="@+id/tv_season_balance_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="當季累積損益"
+                android:textSize="20sp"
+                android:layout_centerHorizontal="true"/>
+
+            <TextView
+                android:id="@+id/tv_season_balance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/tv_season_balance_title"
+                android:gravity="center_vertical"
+                android:layout_centerHorizontal="true"
+                android:layout_alignParentBottom="true"
+                android:textSize="40sp"/>
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/tv_season_balance_rate_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="當季累積報酬率"
+                android:textSize="20sp"
+                android:layout_centerHorizontal="true"/>
+
+            <TextView
+                android:id="@+id/tv_season_balance_rate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/tv_season_balance_rate_title"
+                android:gravity="center_vertical"
+                android:layout_centerHorizontal="true"
+                android:layout_alignParentBottom="true"
+                android:textSize="40sp"/>
+        </RelativeLayout>
+        </TableRow>
+    </TableLayout>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/table_view"
+        android:layout_marginTop="20dp">
+
+        <TextView
+            android:id="@+id/tv_current_net_value_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="目前淨值"
+            android:textSize="20sp"
+            android:layout_centerHorizontal="true"/>
+
+        <TextView
+            android:id="@+id/tv_current_net_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/tv_current_net_value_title"
+            android:gravity="center_vertical"
+            android:layout_centerHorizontal="true"
+            android:layout_alignParentBottom="true"
+            android:textSize="60sp"/>
+    </RelativeLayout>
+</RelativeLayout>

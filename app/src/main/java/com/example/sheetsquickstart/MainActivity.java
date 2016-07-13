@@ -41,6 +41,7 @@ import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -59,17 +60,24 @@ import pub.devrel.easypermissions.EasyPermissions;
 
 public class MainActivity extends Activity
         implements EasyPermissions.PermissionCallbacks {
-    GoogleAccountCredential mCredential;
-    private TextView mOutputText;
+    private GoogleAccountCredential mCredential;
     private Button mCallApiButton;
-    ProgressDialog mProgress;
+    private ProgressDialog mProgress;
+    private ImageView mTodayFace;
+    private TextView mTodayBalance;
+    private TextView mTodayBalanceTitle;
+    private TextView mMonthBalance;
+    private TextView mMonthBalanceRate;
+    private TextView mSeasonBalance;
+    private TextView mSeasonBalanceRate;
+    private TextView mCurrentNetValue;
+    private TextView mOutputText;
 
     static final int REQUEST_ACCOUNT_PICKER = 1000;
     static final int REQUEST_AUTHORIZATION = 1001;
     static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
     static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
 
-    private static final String BUTTON_TEXT = "Get MMFund Result";
     private static final String PREF_ACCOUNT_NAME = "accountName";
     private static final String[] SCOPES = {SheetsScopes.SPREADSHEETS_READONLY};
     /**
@@ -86,20 +94,9 @@ public class MainActivity extends Activity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        LinearLayout activityLayout = new LinearLayout(this);
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.MATCH_PARENT);
-        activityLayout.setLayoutParams(lp);
-        activityLayout.setOrientation(LinearLayout.VERTICAL);
-        activityLayout.setPadding(16, 16, 16, 16);
+        setContentView(R.layout.activity_main);
 
-        ViewGroup.LayoutParams tlp = new ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
-
-        mCallApiButton = new Button(this);
-        mCallApiButton.setText(BUTTON_TEXT);
+        mCallApiButton = (Button) findViewById(R.id.btn_get_data);
         mCallApiButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -109,22 +106,19 @@ public class MainActivity extends Activity
                 mCallApiButton.setEnabled(true);
             }
         });
-        activityLayout.addView(mCallApiButton);
-
-        mOutputText = new TextView(this);
-        mOutputText.setLayoutParams(tlp);
-        mOutputText.setPadding(16, 16, 16, 16);
-        mOutputText.setVerticalScrollBarEnabled(true);
-        mOutputText.setMovementMethod(new ScrollingMovementMethod());
-        mOutputText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
-        mOutputText.setText(
-                "按 \'" + BUTTON_TEXT + "\' 取得損益");
-        activityLayout.addView(mOutputText);
 
         mProgress = new ProgressDialog(this);
         mProgress.setMessage("Calling Google Sheets API ...");
 
-        setContentView(activityLayout);
+        mTodayFace = (ImageView) findViewById(R.id.iv_today_face);
+        mTodayBalanceTitle = (TextView) findViewById(R.id.tv_today_balance_title);
+        mTodayBalance = (TextView) findViewById(R.id.tv_today_balance);
+        mMonthBalance = (TextView) findViewById(R.id.tv_month_balance);
+        mSeasonBalance = (TextView) findViewById(R.id.tv_season_balance);
+        mMonthBalanceRate = (TextView) findViewById(R.id.tv_month_balance_rate);
+        mSeasonBalanceRate = (TextView) findViewById(R.id.tv_season_balance_rate);
+        mCurrentNetValue = (TextView) findViewById(R.id.tv_current_net_value);
+        mOutputText = (TextView) findViewById(R.id.tv_output_text);
 
         // Initialize credentials and service object.
         mCredential = GoogleAccountCredential.usingOAuth2(
@@ -136,6 +130,46 @@ public class MainActivity extends Activity
 
     }
 
+    public void updateUIFromResult(List<String> result) {
+        mTodayBalanceTitle.setText(result.get(0));
+
+        int todayBalance = Integer.valueOf(result.get(1));
+        if(todayBalance > 0) {
+            mTodayBalance.setTextColor(getResources().getColor(R.color.red));
+            mTodayBalance.setText("$"+todayBalance);
+            mTodayFace.setImageResource(R.drawable.smile_face);
+        } else {
+            mTodayBalance.setTextColor(getResources().getColor(R.color.green));
+            mTodayBalance.setText("-$"+todayBalance);
+            mTodayFace.setImageResource(R.drawable.crying_face);
+        }
+
+        int monthBalance = Integer.valueOf(result.get(2));
+        if(monthBalance > 0) {
+            mMonthBalance.setTextColor(getResources().getColor(R.color.red));
+            mMonthBalance.setText("$"+monthBalance);
+        } else {
+            mMonthBalance.setTextColor(getResources().getColor(R.color.green));
+            mMonthBalance.setText("-$"+monthBalance);
+        }
+
+        float monthBalanceRate = Float.valueOf(result.get(3));
+        if(monthBalanceRate > 0) {
+            mMonthBalanceRate.setTextColor(getResources().getColor(R.color.red));
+        } else {
+            mMonthBalanceRate.setTextColor(getResources().getColor(R.color.green));
+        }
+        mMonthBalanceRate.setText(String.format("%.2f%%", monthBalanceRate));
+
+
+        float currentNetValue = Float.valueOf(result.get(4));
+        if(currentNetValue >= 100) {
+            mCurrentNetValue.setTextColor(getResources().getColor(R.color.red));
+        } else {
+            mCurrentNetValue.setTextColor(getResources().getColor(R.color.green));
+        }
+        mCurrentNetValue.setText(String.format("%.2f", currentNetValue));
+    }
 
     /**
      * Attempt to call the API, after verifying that all the preconditions are
@@ -395,7 +429,7 @@ public class MainActivity extends Activity
             JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
             mService = new Sheets.Builder(
                     transport, jsonFactory, credential)
-                    .setApplicationName("Google Sheets API Android Quickstart")
+                    .setApplicationName(getResources().getString(R.string.app_name))
                     .build();
         }
 
@@ -430,7 +464,7 @@ public class MainActivity extends Activity
             // String spreadsheetId = "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms";
             NumberFormat usNumber = NumberFormat.getNumberInstance(Locale.US);
             String spreadsheetId = "1MtrjWBGEv_oeBWU8mf3rShBSANmQyTuCi0-F3yH8Spc";
-            String range = "A2:F";
+            String range = "A185:J";
             List<String> results = new ArrayList<String>();
             ValueRange response = this.mService.spreadsheets().values()
                     .get(spreadsheetId, range)
@@ -438,32 +472,41 @@ public class MainActivity extends Activity
             List<List<Object>> values = response.getValues();
             int monthlySum = 0;
             int todayResult = 0;
+            float currentNetValue = 0.0f;
+            float monthStartNetValue = 0.0f;
             String todayStr = "";
             if (values != null) {
                 for (List row : values) {
-                    if(row.size() < 5)
+                    if(row.size() < 10)
                         continue;
                     String dateString = (String) row.get(0);
                     Date date = null;
                     try {
                         date = df.parse(dateString);
                         String todayResultStr = (String) row.get(4);
+                        String balanceRate = (String) row.get(9);
                         if (!TextUtils.isEmpty(todayResultStr)) {
                             todayStr = dateString;
                             Date now = new Date();
                             if (now.getYear() == date.getYear() && now.getMonth() == date.getMonth()) {
                                 todayResult = usNumber.parse(todayResultStr).intValue();
+                                currentNetValue = Float.valueOf(balanceRate);
                                 monthlySum += todayResult;
                             }
                         } else {
                             continue;
                         }
                     } catch (ParseException e) {
+                        monthStartNetValue = Float.valueOf((String) row.get(9));
+                        Log.d(TAG, "month start net value = "+monthStartNetValue);
                         Log.d(TAG, "transaction log: " + dateString);
                     }
                 }
-                results.add("最近更新日期 " + todayStr + ": 損益 = " + todayResult);
-                results.add("本月損益 = " + monthlySum);
+                results.add(todayStr);
+                results.add(String.valueOf(todayResult));
+                results.add(String.valueOf(monthlySum));
+                results.add(String.valueOf(currentNetValue-monthStartNetValue));
+                results.add(String.valueOf(currentNetValue));
             }
             return results;
         }
@@ -481,8 +524,8 @@ public class MainActivity extends Activity
             if (output == null || output.size() == 0) {
                 mOutputText.setText("No results returned.");
             } else {
-//                output.add(0, "Data retrieved using the Google Sheets API:");
-                mOutputText.setText(TextUtils.join("\n", output));
+                updateUIFromResult(output);
+                // mOutputText.setText(TextUtils.join("\n", output));
             }
         }
 
