@@ -1,25 +1,5 @@
 package com.example.sheetsquickstart;
 
-import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.api.client.extensions.android.http.AndroidHttp;
-import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
-import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
-import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
-
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.client.util.ExponentialBackOff;
-
-import com.google.api.services.sheets.v4.Sheets;
-import com.google.api.services.sheets.v4.SheetsScopes;
-
-import com.google.api.services.sheets.v4.model.*;
-
 import android.Manifest;
 import android.accounts.AccountManager;
 import android.app.Activity;
@@ -35,15 +15,28 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
-import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.api.client.extensions.android.http.AndroidHttp;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
+import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.util.ExponentialBackOff;
+import com.google.api.services.sheets.v4.Sheets;
+import com.google.api.services.sheets.v4.SheetsScopes;
+import com.google.api.services.sheets.v4.model.ValueRange;
 
 import java.io.IOException;
 import java.text.NumberFormat;
@@ -128,29 +121,31 @@ public class MainActivity extends Activity
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
 
+        getResultsFromApi();
+
     }
 
     public void updateUIFromResult(List<String> result) {
         mTodayBalanceTitle.setText(result.get(0));
 
         int todayBalance = Integer.valueOf(result.get(1));
-        if(todayBalance > 0) {
+        if(todayBalance >= 0) {
             mTodayBalance.setTextColor(getResources().getColor(R.color.red));
             mTodayBalance.setText("$"+todayBalance);
             mTodayFace.setImageResource(R.drawable.smile_face);
         } else {
             mTodayBalance.setTextColor(getResources().getColor(R.color.green));
-            mTodayBalance.setText("-$"+todayBalance);
+            mTodayBalance.setText("-$"+Math.abs(todayBalance));
             mTodayFace.setImageResource(R.drawable.crying_face);
         }
 
         int monthBalance = Integer.valueOf(result.get(2));
-        if(monthBalance > 0) {
+        if(monthBalance >= 0) {
             mMonthBalance.setTextColor(getResources().getColor(R.color.red));
             mMonthBalance.setText("$"+monthBalance);
         } else {
             mMonthBalance.setTextColor(getResources().getColor(R.color.green));
-            mMonthBalance.setText("-$"+monthBalance);
+            mMonthBalance.setText("-$"+Math.abs(monthBalance));
         }
 
         float monthBalanceRate = Float.valueOf(result.get(3));
