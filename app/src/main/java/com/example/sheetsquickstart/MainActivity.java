@@ -21,6 +21,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.ConnectionResult;
@@ -38,7 +39,9 @@ import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.ValueRange;
 
+import io.fabric.sdk.android.Fabric;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -53,6 +56,9 @@ import pub.devrel.easypermissions.EasyPermissions;
 
 public class MainActivity extends Activity
         implements EasyPermissions.PermissionCallbacks {
+    public SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+    public final static String TAG = "Insight";
+
     private GoogleAccountCredential mCredential;
     private Button mCallApiButton;
     private ProgressDialog mProgress;
@@ -61,8 +67,8 @@ public class MainActivity extends Activity
     private TextView mTodayBalanceTitle;
     private TextView mMonthBalance;
     private TextView mMonthBalanceRate;
-    private TextView mSeasonBalance;
-    private TextView mSeasonBalanceRate;
+    private TextView mQuarterBalance;
+    private TextView mQuarterBalanceRate;
     private TextView mCurrentNetValue;
     private TextView mOutputText;
 
@@ -87,6 +93,7 @@ public class MainActivity extends Activity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Fabric.with(this, new Crashlytics());
         setContentView(R.layout.activity_main);
 
         mCallApiButton = (Button) findViewById(R.id.btn_get_data);
@@ -107,9 +114,9 @@ public class MainActivity extends Activity
         mTodayBalanceTitle = (TextView) findViewById(R.id.tv_today_balance_title);
         mTodayBalance = (TextView) findViewById(R.id.tv_today_balance);
         mMonthBalance = (TextView) findViewById(R.id.tv_month_balance);
-        mSeasonBalance = (TextView) findViewById(R.id.tv_season_balance);
+        mQuarterBalance = (TextView) findViewById(R.id.tv_season_balance);
         mMonthBalanceRate = (TextView) findViewById(R.id.tv_month_balance_rate);
-        mSeasonBalanceRate = (TextView) findViewById(R.id.tv_season_balance_rate);
+        mQuarterBalanceRate = (TextView) findViewById(R.id.tv_season_balance_rate);
         mCurrentNetValue = (TextView) findViewById(R.id.tv_current_net_value);
         mOutputText = (TextView) findViewById(R.id.tv_output_text);
 
@@ -126,26 +133,36 @@ public class MainActivity extends Activity
     }
 
     public void updateUIFromResult(List<String> result) {
-        mTodayBalanceTitle.setText(result.get(0));
+        String dateStr = result.get(0);
+        try {
+            Date date = df.parse(dateStr);
+            String formattedDate = new SimpleDateFormat("MMM dd E").format(date);
+            mTodayBalanceTitle.setText(formattedDate);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+
+        DecimalFormat formatter = new DecimalFormat("#,###");
 
         int todayBalance = Integer.valueOf(result.get(1));
         if(todayBalance >= 0) {
             mTodayBalance.setTextColor(getResources().getColor(R.color.red));
-            mTodayBalance.setText("$"+todayBalance);
+            mTodayBalance.setText("$"+formatter.format(todayBalance));
             mTodayFace.setImageResource(R.drawable.smile_face);
         } else {
             mTodayBalance.setTextColor(getResources().getColor(R.color.green));
-            mTodayBalance.setText("-$"+Math.abs(todayBalance));
+            mTodayBalance.setText("-$"+formatter.format(Math.abs(todayBalance)));
             mTodayFace.setImageResource(R.drawable.crying_face);
         }
 
         int monthBalance = Integer.valueOf(result.get(2));
         if(monthBalance >= 0) {
             mMonthBalance.setTextColor(getResources().getColor(R.color.red));
-            mMonthBalance.setText("$"+monthBalance);
+            mMonthBalance.setText("$"+formatter.format(monthBalance));
         } else {
             mMonthBalance.setTextColor(getResources().getColor(R.color.green));
-            mMonthBalance.setText("-$"+Math.abs(monthBalance));
+            mMonthBalance.setText("-$"+formatter.format(Math.abs(monthBalance)));
         }
 
         float monthBalanceRate = Float.valueOf(result.get(3));
@@ -156,8 +173,24 @@ public class MainActivity extends Activity
         }
         mMonthBalanceRate.setText(String.format("%.2f%%", monthBalanceRate));
 
+        int quarterBalance = Integer.valueOf(result.get(4));
+        if(quarterBalance >= 0) {
+            mQuarterBalance.setTextColor(getResources().getColor(R.color.red));
+            mQuarterBalance.setText("$"+formatter.format(quarterBalance));
+        } else {
+            mQuarterBalance.setTextColor(getResources().getColor(R.color.green));
+            mQuarterBalance.setText("-$"+formatter.format(Math.abs(quarterBalance)));
+        }
 
-        float currentNetValue = Float.valueOf(result.get(4));
+        float quarterBalanceRate = Float.valueOf(result.get(5));
+        if(quarterBalanceRate > 0) {
+            mQuarterBalanceRate.setTextColor(getResources().getColor(R.color.red));
+        } else {
+            mQuarterBalanceRate.setTextColor(getResources().getColor(R.color.green));
+        }
+        mQuarterBalanceRate.setText(String.format("%.2f%%", quarterBalanceRate));
+
+        float currentNetValue = Float.valueOf(result.get(6));
         if(currentNetValue >= 100) {
             mCurrentNetValue.setTextColor(getResources().getColor(R.color.red));
         } else {
@@ -452,8 +485,6 @@ public class MainActivity extends Activity
          * @return List of names and majors
          * @throws IOException
          */
-        public SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-        public final static String TAG = "Insight";
 
         private List<String> getDataFromApi() throws IOException {
             // String spreadsheetId = "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms";
@@ -465,28 +496,44 @@ public class MainActivity extends Activity
                     .get(spreadsheetId, range)
                     .execute();
             List<List<Object>> values = response.getValues();
-            int monthlySum = 0;
-            int todayResult = 0;
-            float currentNetValue = 0.0f;
+            int monthlyBalance = 0;
+            int quarterBalance = 0;
+            int todaysBalance = 0;
+            float dailyNetValue = 0.0f;
             float monthStartNetValue = 0.0f;
+            float quarterStartNetValue = 0.0f;
+            float todaysNetValue = 0.0f;
+
             String todayStr = "";
             if (values != null) {
-                for (List row : values) {
+                for (int i = 0 ; i < values.size() ; ++i) {
+                    List row = values.get(i);
+                    String dateString = (String) row.get(0);
+                    int dailyBalance = 0;
                     if(row.size() < 10)
                         continue;
-                    String dateString = (String) row.get(0);
-                    Date date = null;
                     try {
-                        date = df.parse(dateString);
-                        String todayResultStr = (String) row.get(4);
-                        String balanceRate = (String) row.get(9);
-                        if (!TextUtils.isEmpty(todayResultStr)) {
-                            todayStr = dateString;
-                            Date now = new Date();
-                            if (now.getYear() == date.getYear() && now.getMonth() == date.getMonth()) {
-                                todayResult = usNumber.parse(todayResultStr).intValue();
-                                currentNetValue = Float.valueOf(balanceRate);
-                                monthlySum += todayResult;
+                        Date date = df.parse(dateString);
+                        String dailyBalanceStr = (String) row.get(4);
+                        String dailyNetValueStr = (String) row.get(9);
+
+                        if (!TextUtils.isEmpty(dailyBalanceStr)) {
+                            dailyBalance = usNumber.parse(dailyBalanceStr).intValue();
+                            dailyNetValue = Float.valueOf(dailyNetValueStr);
+
+                            if (isThisRowSameQuarter(date)) {
+                                quarterBalance += dailyBalance;
+                                if (quarterStartNetValue == 0.0f) {
+                                    quarterStartNetValue = monthStartNetValue;
+                                }
+                            }
+                            if (isThisRowSameMonth(date)) {
+                                monthlyBalance += dailyBalance;
+
+                                // the last assign is today's value
+                                todayStr = dateString;
+                                todaysBalance = dailyBalance;
+                                todaysNetValue = dailyNetValue;
                             }
                         } else {
                             continue;
@@ -498,14 +545,33 @@ public class MainActivity extends Activity
                     }
                 }
                 results.add(todayStr);
-                results.add(String.valueOf(todayResult));
-                results.add(String.valueOf(monthlySum));
-                results.add(String.valueOf(currentNetValue-monthStartNetValue));
-                results.add(String.valueOf(currentNetValue));
+                results.add(String.valueOf(todaysBalance));
+                results.add(String.valueOf(monthlyBalance));
+                results.add(String.valueOf(todaysNetValue-monthStartNetValue));
+                results.add(String.valueOf(quarterBalance));
+                results.add(String.valueOf(todaysNetValue-quarterStartNetValue));
+                results.add(String.valueOf(todaysNetValue));
             }
             return results;
         }
 
+        private boolean isThisRowSameMonth(Date date) {
+            Date now = new Date();
+            if(now.getYear() == date.getYear() && now.getMonth() == date.getMonth())
+                return true;
+            return false;
+        }
+
+        private boolean isThisRowSameQuarter(Date date) {
+            Date now = new Date();
+            if(now.getYear() == date.getYear()) {
+                int dateQuarter = (date.getMonth() / 3) + 1;
+                int nowQuarter = (now.getMonth() / 3) + 1;
+                if(dateQuarter == nowQuarter)
+                    return true;
+            }
+            return false;
+        }
 
         @Override
         protected void onPreExecute() {
