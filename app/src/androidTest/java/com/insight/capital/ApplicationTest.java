@@ -1,4 +1,4 @@
-package com.example.sheetsquickstart;
+package com.insight.capital;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

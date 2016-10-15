@@ -1,4 +1,4 @@
-package com.example.sheetsquickstart;
+package com.insight.capital;
 
 import android.Manifest;
 import android.accounts.AccountManager;
@@ -417,9 +417,9 @@ public class MainActivity extends Activity
                 // TODO: If you have web page content that matches this app activity's content,
                 // make sure this auto-generated web page URL is correct.
                 // Otherwise, set the URL to null.
-                Uri.parse("http://host/path"),
+                Uri.parse("http://www.yehjunwei.com"),
                 // TODO: Make sure this auto-generated app URL is correct.
-                Uri.parse("android-app://com.example.sheetsquickstart/http/host/path")
+                Uri.parse("android-app://com.insight.capital/http/www.yehjunwei.com")
         );
         AppIndex.AppIndexApi.start(client, viewAction);
     }
@@ -436,9 +436,9 @@ public class MainActivity extends Activity
                 // TODO: If you have web page content that matches this app activity's content,
                 // make sure this auto-generated web page URL is correct.
                 // Otherwise, set the URL to null.
-                Uri.parse("http://host/path"),
+                Uri.parse("http://www.yehjunwei.com"),
                 // TODO: Make sure this auto-generated app URL is correct.
-                Uri.parse("android-app://com.example.sheetsquickstart/http/host/path")
+                Uri.parse("android-app://com.insight.capital/http/www.yehjunwei.com")
         );
         AppIndex.AppIndexApi.end(client, viewAction);
         client.disconnect();
@@ -576,11 +576,13 @@ public class MainActivity extends Activity
         @Override
         protected void onPreExecute() {
             mOutputText.setText("");
+            Log.d(TAG, "progress.show()");
             mProgress.show();
         }
 
         @Override
         protected void onPostExecute(List<String> output) {
+            Log.d(TAG, "progress.hide()");
             mProgress.hide();
             if (output == null || output.size() == 0) {
                 mOutputText.setText("No results returned.");
