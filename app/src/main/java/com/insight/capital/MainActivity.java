@@ -56,7 +56,7 @@ import pub.devrel.easypermissions.EasyPermissions;
 
 public class MainActivity extends Activity
         implements EasyPermissions.PermissionCallbacks {
-    public SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+    public SimpleDateFormat df = new SimpleDateFormat("yyyy/M/d");
     public final static String TAG = "Insight";
 
     private GoogleAccountCredential mCredential;
