@@ -46,7 +46,7 @@ dependencies {
     compile('com.google.apis:google-api-services-sheets:v4-rev483-1.22.0') {
         exclude group: 'org.apache.httpcomponents'
     }
-    compile('com.crashlytics.sdk.android:crashlytics:2.6.1@aar') {
+    compile('com.crashlytics.sdk.android:crashlytics:2.6.8@aar') {
         transitive = true;
     }
 }
