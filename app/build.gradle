@@ -16,15 +16,15 @@ repositories {
 
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion "24.0.1"
+    compileSdkVersion 25
+    buildToolsVersion '25.0.0'
 
     defaultConfig {
         applicationId "com.insight.capital"
-        minSdkVersion 11
-        targetSdkVersion 24
-        versionCode 102
-        versionName "1.0.2"
+        minSdkVersion 14
+        targetSdkVersion 25
+        versionCode 103
+        versionName "1.0.3"
     }
     buildTypes {
         release {
@@ -35,18 +35,17 @@ android {
 }
 
 dependencies {
-    compile 'com.google.android.gms:play-services-auth:9.0.2'
-    compile 'pub.devrel:easypermissions:0.1.5'
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    testCompile 'junit:junit:4.12'
+    compile 'com.android.support:appcompat-v7:25.3.1'
+    compile 'com.google.android.gms:play-services-auth:11.4.0'
+    compile 'pub.devrel:easypermissions:0.3.0'
     compile('com.google.api-client:google-api-client-android:1.22.0') {
         exclude group: 'org.apache.httpcomponents'
     }
-    compile('com.google.apis:google-api-services-sheets:v4-rev9-1.22.0') {
+    compile('com.google.apis:google-api-services-sheets:v4-rev483-1.22.0') {
         exclude group: 'org.apache.httpcomponents'
     }
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:24.0.0'
-    compile 'com.google.android.gms:play-services-appindexing:9.0.2'
     compile('com.crashlytics.sdk.android:crashlytics:2.6.1@aar') {
         transitive = true;
     }
